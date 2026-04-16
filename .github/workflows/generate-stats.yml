@@ -8,44 +8,16 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write  # 🔑 Grants push permission
     steps:
-      - name: 🛎️ Checkout repository
+      - name: 🛎️ Checkout
         uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.PAT_TOKEN }} # Use PAT for push permissions
 
-      # 1. Generate Stats & Languages (OUTPUT_ONLY prevents internal commit conflicts)
-      - name: 📈 Generate Summary Cards
+      - name: 📈 Generate Stats & Languages
         uses: vn7n24fzkq/github-profile-summary-cards@release
         env:
-          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           USERNAME: Abeera-Mehtab
-          OUTPUT_ONLY: true # ⬅️ CRITICAL: Stops action from trying to commit
-
-      # 2. Generate Streak & Trophies via curl (more reliable than actions for single files)
-      - name: 🔥 Generate Streak SVG
-        run: curl -s -o streak-stats.svg "https://streak-stats.demolab.com/?user=Abeera-Mehtab&theme=dark_lover&border_radius=7"
-
-      - name: 🏆 Generate Trophy SVG
-        run: curl -s -o profile-trophy.svg "https://github-profile-trophy.vercel.app/?username=Abeera-Mehtab&theme=dark_lover&row=1&column=4&no-frame=true"
-
-      # 3. Safely Commit All Generated Files
-      - name: 💾 Commit & Push
-        run: |
-          git config --local user.name "github-actions[bot]"
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          
-          # Create dir if missing (prevents git add 128 error)
-          mkdir -p profile-summary-card-output/Abeera-Mehtab
-          
-          git add profile-summary-card-output/ streak-stats.svg profile-trophy.svg
-          
-          # Commit only if there are actual changes
-          if git diff --staged --quiet; then
-            echo "✅ No new changes to commit"
-            exit 0
-          fi
-          
-          git commit -m "📊 Update profile assets [skip ci]"
-          git push
+          # The action auto-commits & pushes to this repo when GITHUB_TOKEN is set
