@@ -22,7 +22,7 @@ jobs:
           layout: compact
 
       - name: 🏆 Generate Trophies
-        uses: ryo-ma/github-profile-trophy@v2
+        uses: ryo-ma/github-profile-trophy@master
         with:
           username: Abeera-Mehtab
           theme: dark_lover
