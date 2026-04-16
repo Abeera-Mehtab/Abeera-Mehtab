@@ -2,8 +2,8 @@ name: 📊 Generate Profile Assets
 
 on:
   schedule:
-    - cron: "0 0 * * *" # Runs daily at midnight
-  workflow_dispatch: # Allows manual run
+    - cron: "0 0 * * *"
+  workflow_dispatch:
 
 jobs:
   build:
@@ -11,41 +11,41 @@ jobs:
     steps:
       - name: 🛎️ Checkout repository
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PAT_TOKEN }} # Use PAT for push permissions
 
-      # 1. Generate Stats & Languages (Profile Summary Cards)
-      # This replaces the broken anuraghazra repo. It generates 4-5 SVGs in a folder.
-      - name: 📈 Generate Stats & Languages
+      # 1. Generate Stats & Languages (OUTPUT_ONLY prevents internal commit conflicts)
+      - name: 📈 Generate Summary Cards
         uses: vn7n24fzkq/github-profile-summary-cards@release
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
         with:
           USERNAME: Abeera-Mehtab
+          OUTPUT_ONLY: true # ⬅️ CRITICAL: Stops action from trying to commit
 
-      # 2. Generate Trophies
-      - name: 🏆 Generate Trophies
-        uses: ryo-ma/github-profile-trophy@master
-        with:
-          username: Abeera-Mehtab
-          theme: dark_lover
-          filename: profile-trophy.svg
-          row: 1
-          column: 4
-          no-frame: true
+      # 2. Generate Streak & Trophies via curl (more reliable than actions for single files)
+      - name: 🔥 Generate Streak SVG
+        run: curl -s -o streak-stats.svg "https://streak-stats.demolab.com/?user=Abeera-Mehtab&theme=dark_lover&border_radius=7"
 
-      # 3. Generate Streak
-      - name: 🔥 Generate Streak
-        uses: DenverCoder1/github-readme-streak-stats@main
-        with:
-          user: Abeera-Mehtab
-          theme: dark_lover
-          output_path: ./streak-stats.svg
-          push: false # We push manually at the end to combine all files
+      - name: 🏆 Generate Trophy SVG
+        run: curl -s -o profile-trophy.svg "https://github-profile-trophy.vercel.app/?username=Abeera-Mehtab&theme=dark_lover&row=1&column=4&no-frame=true"
 
-      # 4. Commit All Generated SVGs
+      # 3. Safely Commit All Generated Files
       - name: 💾 Commit & Push
         run: |
           git config --local user.name "github-actions[bot]"
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git add .
-          git commit -m "📊 Update profile assets [skip ci]" || echo "No changes"
+          
+          # Create dir if missing (prevents git add 128 error)
+          mkdir -p profile-summary-card-output/Abeera-Mehtab
+          
+          git add profile-summary-card-output/ streak-stats.svg profile-trophy.svg
+          
+          # Commit only if there are actual changes
+          if git diff --staged --quiet; then
+            echo "✅ No new changes to commit"
+            exit 0
+          fi
+          
+          git commit -m "📊 Update profile assets [skip ci]"
           git push
