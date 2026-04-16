@@ -1,0 +1,63 @@
+name: 📊 Generate GitHub Stats & Assets
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # Runs daily at midnight UTC
+  workflow_dispatch: # Allows you to run it manually
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🛎️ Checkout repository
+        uses: actions/checkout@v4
+
+      # 1. Generate Stats & Languages using anuraghazra's Action
+      - name: 📈 Generate Stats & Languages
+        uses: anuraghazra/github-readme-stats@master
+        with:
+          username: Abeera-Mehtab
+          theme: dark_lover
+          hide_border: true
+          show_icons: true
+          layout: compact # For languages
+
+      # 2. Generate Trophies using ryo-ma's Action
+      - name: 🏆 Generate Trophies
+        uses: ryo-ma/github-profile-trophy@v2
+        with:
+          username: Abeera-Mehtab
+          theme: dark_lover
+          row: 1
+          column: 4
+          no-frame: true
+
+      # 3. Download Streak Stats (Self-hosting the image file)
+      # Note: This downloads the image from the reliable service and saves it to your repo.
+      # If the service is down, it keeps the last working version in your repo.
+      - name: 🔥 Cache Streak Stats
+        run: |
+          curl -s -o streak-stats.svg "https://streak-stats.demolab.com/?user=Abeera-Mehtab&theme=dark_lover&border_radius=7"
+          # Fallback: if download failed (empty file), remove it so we don't commit a broken image
+          if [ ! -s streak-stats.svg ]; then rm streak-stats.svg; fi
+
+      # 4. Commit the new SVGs to your repository
+      - name: 💾 Commit & Push SVGs
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
+        run: |
+          git config --local user.name "github-actions[bot]"
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # Add all generated svg files
+          git add github-stats.svg languages.svg profile-trophy.svg streak-stats.svg
+          
+          # Commit only if there are changes
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          
+          git commit -m "📊 Update profile stats [skip ci]"
+          git push
