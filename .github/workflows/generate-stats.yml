@@ -2,35 +2,30 @@ name: 📊 Generate Profile Assets
 
 on:
   schedule:
-    - cron: "0 0 * * *"
-  workflow_dispatch:
+    - cron: "0 0 * * *" # Runs daily at midnight UTC
+  workflow_dispatch: # Allows manual run
 
 jobs:
   generate:
     runs-on: ubuntu-latest
+    timeout-minutes: 10 # Prevents infinite loops
     permissions:
-      contents: write
+      contents: write # Required to push files
     
     steps:
-      - name: 🛎️ Checkout
+      - name: 🛎️ Checkout Repository
         uses: actions/checkout@v4
 
-      - name: 📈 Generate GitHub Stats
-        uses: DenverCoder1/github-readme-streak-stats@main
+      # 1. Generate Stats & Languages (Stable Alternative)
+      - name: 📈 Generate Stats & Languages
+        uses: vn7n24fzkq/github-profile-summary-cards@release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          user: Abeera-Mehtab
-          theme: dark_lover
-          output_path: ./github-stats.svg
-          type: stats
+          USERNAME: Abeera-Mehtab
+          THEME: dark_lover
 
-      - name: 🔥 Generate Streak Stats
-        uses: DenverCoder1/github-readme-streak-stats@main
-        with:
-          user: Abeera-Mehtab
-          theme: dark_lover
-          output_path: ./streak-stats.svg
-          type: streak
-
+      # 2. Generate Trophies
       - name: 🏆 Generate Trophies
         uses: ryo-ma/github-profile-trophy@master
         with:
@@ -41,14 +36,24 @@ jobs:
           column: 4
           no-frame: true
 
-      - name: 🌐 Generate Top Languages
+      # 3. Generate Streak (Direct Download to avoid hanging actions)
+      - name: 🔥 Generate Streak
         run: |
-          curl -s -o languages.svg "https://github-readme-stats.vercel.app/api/top-langs/?username=Abeera-Mehtab&layout=compact&theme=dark_lover&hide_border=true"
+          curl -s -o streak-stats.svg "https://streak-stats.demolab.com/?user=Abeera-Mehtab&theme=dark_lover&border_radius=7"
 
+      # 4. Organize Files to Match Your README Expectations
+      # The summary-cards action outputs to a subfolder; we copy them to the root with the names your README wants
+      - name: 📂 Organize Files
+        run: |
+          cp -f profile-summary-card-output/Abeera-Mehtab/3-stats.svg github-stats.svg
+          cp -f profile-summary-card-output/Abeera-Mehtab/2-most-commit-language.svg languages.svg
+          # Trophies and Streak are already in the root with correct names
+
+      # 5. Commit & Push
       - name: 💾 Commit & Push
         run: |
           git config --local user.name "github-actions[bot]"
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git add github-stats.svg streak-stats.svg profile-trophy.svg languages.svg
-          git commit -m "📊 Update profile assets [skip ci]" || echo "No changes"
+          git add github-stats.svg languages.svg profile-trophy.svg streak-stats.svg
+          git commit -m "📊 Update profile assets [skip ci]" || echo "No changes to commit"
           git push
