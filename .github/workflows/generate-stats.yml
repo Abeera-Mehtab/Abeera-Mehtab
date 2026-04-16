@@ -6,18 +6,49 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  generate:
     runs-on: ubuntu-latest
     permissions:
-      contents: write  # 🔑 Grants push permission
+      contents: write
+    
     steps:
       - name: 🛎️ Checkout
         uses: actions/checkout@v4
 
-      - name: 📈 Generate Stats & Languages
-        uses: vn7n24fzkq/github-profile-summary-cards@release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: 📈 Generate GitHub Stats
+        uses: DenverCoder1/github-readme-streak-stats@main
         with:
-          USERNAME: Abeera-Mehtab
-          # The action auto-commits & pushes to this repo when GITHUB_TOKEN is set
+          user: Abeera-Mehtab
+          theme: dark_lover
+          output_path: ./github-stats.svg
+          type: stats
+
+      - name: 🔥 Generate Streak Stats
+        uses: DenverCoder1/github-readme-streak-stats@main
+        with:
+          user: Abeera-Mehtab
+          theme: dark_lover
+          output_path: ./streak-stats.svg
+          type: streak
+
+      - name: 🏆 Generate Trophies
+        uses: ryo-ma/github-profile-trophy@master
+        with:
+          username: Abeera-Mehtab
+          theme: dark_lover
+          filename: profile-trophy.svg
+          row: 1
+          column: 4
+          no-frame: true
+
+      - name: 🌐 Generate Top Languages
+        run: |
+          curl -s -o languages.svg "https://github-readme-stats.vercel.app/api/top-langs/?username=Abeera-Mehtab&layout=compact&theme=dark_lover&hide_border=true"
+
+      - name: 💾 Commit & Push
+        run: |
+          git config --local user.name "github-actions[bot]"
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git add github-stats.svg streak-stats.svg profile-trophy.svg languages.svg
+          git commit -m "📊 Update profile assets [skip ci]" || echo "No changes"
+          git push
