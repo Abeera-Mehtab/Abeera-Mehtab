@@ -15,7 +15,7 @@ jobs:
       - name: 🛎️ Checkout
         uses: actions/checkout@v4
 
-      # 1. Stats & Languages (Most reliable self-hosted option)
+      # 1. Stats & Languages
       - name: 📈 Generate Stats & Languages
         id: summary
         uses: vn7n24fzkq/github-profile-summary-cards@release
@@ -26,7 +26,7 @@ jobs:
           THEME: dark_lover
         continue-on-error: true
 
-      # 2. Trophies (With auth + graceful fallback)
+      # 2. Trophies
       - name: 🏆 Generate Trophies
         id: trophies
         uses: ryo-ma/github-profile-trophy@master
@@ -41,7 +41,7 @@ jobs:
           no-frame: true
         continue-on-error: true
 
-      # 3. Streak (Direct download with fallback)
+      # 3. Streak
       - name: 🔥 Download Streak
         id: streak
         run: |
@@ -49,59 +49,38 @@ jobs:
             echo "✅ Streak downloaded"
           else
             echo "⚠️ Streak service unavailable, creating placeholder"
-            cat > streak-stats.svg << 'EOF'
-<svg xmlns="http://www.w3.org/2000/svg" width="400" height="160" viewBox="0 0 400 160">
-  <rect width="400" height="160" fill="#161b22" rx="7"/>
-  <text x="50%" y="50%" text-anchor="middle" fill="#8b949e" font-family="monospace" font-size="14">Streak stats loading...</text>
-</svg>
-EOF
+            echo '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="160" viewBox="0 0 400 160"><rect width="400" height="160" fill="#161b22" rx="7"/><text x="50%" y="50%" text-anchor="middle" fill="#8b949e" font-family="monospace" font-size="14">Streak stats loading...</text></svg>' > streak-stats.svg
           fi
 
-      # 4. Create fallbacks for any missing files
+      # 4. Create fallbacks
       - name: 🛡️ Ensure All Files Exist
         run: |
           # Fallback for Stats
           if [ ! -f "./profile-summary-card-output/Abeera-Mehtab/3-stats.svg" ]; then
             echo "⚠️ Stats not generated, creating placeholder"
             mkdir -p ./profile-summary-card-output/Abeera-Mehtab
-            cat > ./profile-summary-card-output/Abeera-Mehtab/3-stats.svg << 'EOF'
-<svg xmlns="http://www.w3.org/2000/svg" width="400" height="160" viewBox="0 0 400 160">
-  <rect width="400" height="160" fill="#161b22" rx="7"/>
-  <text x="50%" y="50%" text-anchor="middle" fill="#8b949e" font-family="monospace" font-size="14">GitHub stats loading...</text>
-</svg>
-EOF
+            echo '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="160" viewBox="0 0 400 160"><rect width="400" height="160" fill="#161b22" rx="7"/><text x="50%" y="50%" text-anchor="middle" fill="#8b949e" font-family="monospace" font-size="14">GitHub stats loading...</text></svg>' > ./profile-summary-card-output/Abeera-Mehtab/3-stats.svg
           fi
           
           # Fallback for Languages
           if [ ! -f "./profile-summary-card-output/Abeera-Mehtab/2-most-commit-language.svg" ]; then
             echo "⚠️ Languages not generated, creating placeholder"
-            cat > ./profile-summary-card-output/Abeera-Mehtab/2-most-commit-language.svg << 'EOF'
-<svg xmlns="http://www.w3.org/2000/svg" width="400" height="160" viewBox="0 0 400 160">
-  <rect width="400" height="160" fill="#161b22" rx="7"/>
-  <text x="50%" y="50%" text-anchor="middle" fill="#8b949e" font-family="monospace" font-size="14">Top languages loading...</text>
-</svg>
-EOF
+            echo '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="160" viewBox="0 0 400 160"><rect width="400" height="160" fill="#161b22" rx="7"/><text x="50%" y="50%" text-anchor="middle" fill="#8b949e" font-family="monospace" font-size="14">Top languages loading...</text></svg>' > ./profile-summary-card-output/Abeera-Mehtab/2-most-commit-language.svg
           fi
           
           # Fallback for Trophies
           if [ ! -f "profile-trophy.svg" ]; then
             echo "⚠️ Trophies not generated, creating placeholder"
-            cat > profile-trophy.svg << 'EOF'
-<svg xmlns="http://www.w3.org/2000/svg" width="400" height="200" viewBox="0 0 400 200">
-  <rect width="400" height="200" fill="#161b22" rx="7"/>
-  <text x="50%" y="50%" text-anchor="middle" fill="#8b949e" font-family="monospace" font-size="14">Trophies loading...</text>
-</svg>
-EOF
+            echo '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="200" viewBox="0 0 400 200"><rect width="400" height="200" fill="#161b22" rx="7"/><text x="50%" y="50%" text-anchor="middle" fill="#8b949e" font-family="monospace" font-size="14">Trophies loading...</text></svg>' > profile-trophy.svg
           fi
 
-      # 5. Copy to exact filenames your README expects
+      # 5. Copy to exact filenames
       - name: 📦 Sync Filenames
         run: |
           cp -f ./profile-summary-card-output/Abeera-Mehtab/3-stats.svg ./github-stats.svg
           cp -f ./profile-summary-card-output/Abeera-Mehtab/2-most-commit-language.svg ./languages.svg
-          # streak-stats.svg and profile-trophy.svg already in root
 
-      # 6. Safe commit (only if files changed)
+      # 6. Safe commit
       - name: 💾 Commit Assets
         run: |
           git config --local user.name "github-actions[bot]"
