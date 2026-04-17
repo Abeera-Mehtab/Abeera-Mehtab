@@ -28,7 +28,6 @@
 ## 🚀 Languages and Tools I Use
 
 ### 🛡️ Cybersecurity & Ethical Hacking Tools
-
 #### Defensive Security
 <p align="center"><img src="https://wazuh.com/brand-assets/Wazuh-Logo.svg" alt="Wazuh" width="40" height="40" style="margin: 5px;"/><img src="https://www.svgrepo.com/show/305990/elastic.svg" alt="ELK Stack" width="40" height="40" style="margin: 5px;"/><img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/pfsense-light.svg" alt="pfSense" width="40" height="40" style="margin: 5px;"/><img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/opencti.png" alt="OpenCTI" width="40" height="40" style="margin: 5px;"/><img src="https://www.svgrepo.com/show/381643/flame.svg" alt="FLARE VM" width="40" height="40" style="margin: 5px;"/></p>
 
@@ -58,7 +57,6 @@
 
 ### 🖥️ Core Tools
 <p align="center"><img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/linux/linux-original.svg" alt="Linux" width="40" height="40" style="margin: 5px;"/><img src="https://www.vectorlogo.zone/logos/git-scm/git-scm-icon.svg" alt="Git" width="40" height="40" style="margin: 5px;"/></p>
-
 ---
 
 ## ⚡️ Where to Find Me
