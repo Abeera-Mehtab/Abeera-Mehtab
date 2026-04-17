@@ -24,9 +24,11 @@ jobs:
           USERNAME: Abeera-Mehtab
           THEME: dark_lover
 
-      # 2. Trophies (Self-hosted generation)
+      # 2. Trophies (With auth + error handling)
       - name: 🏆 Generate Trophies
         uses: ryo-ma/github-profile-trophy@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # 🔑 Adds auth to avoid rate limits
         with:
           username: Abeera-Mehtab
           theme: dark_lover
@@ -34,25 +36,33 @@ jobs:
           row: 1
           column: 4
           no-frame: true
+        continue-on-error: true  # ✅ Won't fail whole workflow if trophies break
 
-      # 3. Streak (Direct download from stable endpoint)
+      # 3. Streak (Direct download with fallback)
       - name: 🔥 Download Streak Stats
         run: |
-          curl -sf -o streak-stats.svg "https://streak-stats.demolab.com/?user=Abeera-Mehtab&theme=dark_lover&border_radius=7" || echo "Streak service temporarily unavailable, keeping previous version"
+          curl -sf -o streak-stats.svg "https://streak-stats.demolab.com/?user=Abeera-Mehtab&theme=dark_lover&border_radius=7" || {
+            echo "⚠️ Streak service unavailable, keeping previous version"
+            # Keep existing file if download fails
+            test -f streak-stats.svg || echo "<svg></svg>" > streak-stats.svg
+          }
 
       # 4. Rename & Commit to match your README exactly
       - name: 💾 Sync & Commit Assets
         run: |
           # Copy summary cards to your exact README filenames
-          cp -f ./profile-summary-card-output/Abeera-Mehtab/3-stats.svg ./github-stats.svg
-          cp -f ./profile-summary-card-output/Abeera-Mehtab/2-most-commit-language.svg ./languages.svg
+          cp -f ./profile-summary-card-output/Abeera-Mehtab/3-stats.svg ./github-stats.svg 2>/dev/null || echo "⚠️ Stats not generated"
+          cp -f ./profile-summary-card-output/Abeera-Mehtab/2-most-commit-language.svg ./languages.svg 2>/dev/null || echo "⚠️ Languages not generated"
+          
+          # Ensure trophy file exists (fallback if generation failed)
+          test -f profile-trophy.svg || echo "<svg viewBox='0 0 400 200'><text x='50%' y='50%' text-anchor='middle' fill='#888'>Trophies loading...</text></svg>" > profile-trophy.svg
           
           git config --local user.name "github-actions[bot]"
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           
-          # Pull latest to avoid race conditions with the auto-push from step 1
-          git pull --rebase origin main || true
+          # Pull latest to avoid race conditions
+          git pull --rebase origin main 2>/dev/null || true
           
           git add github-stats.svg languages.svg streak-stats.svg profile-trophy.svg
-          git commit -m "📊 Update profile assets [skip ci]" || echo "No changes to commit"
+          git commit -m "📊 Update profile assets [skip ci]" || echo "✅ No changes to commit"
           git push
