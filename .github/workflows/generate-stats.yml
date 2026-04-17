@@ -1,4 +1,4 @@
-name: 📊 Generate Profile Assets
+name: 📊 Self-Hosted Profile Assets
 
 on:
   schedule:
@@ -12,10 +12,19 @@ jobs:
       contents: write
     
     steps:
-      - name: 🛎️ Checkout
+      - name: 🛎️ Checkout repository
         uses: actions/checkout@v4
 
-      # 1. Generate Trophies (Self-Hosted via ryo-ma)
+      # 1. Stats & Languages (Self-hosted via GitHub API)
+      - name: 📈 Generate Stats & Languages
+        uses: vn7n24fzkq/github-profile-summary-cards@release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          USERNAME: Abeera-Mehtab
+          THEME: dark_lover
+
+      # 2. Trophies (Self-hosted generation)
       - name: 🏆 Generate Trophies
         uses: ryo-ma/github-profile-trophy@master
         with:
@@ -26,14 +35,24 @@ jobs:
           column: 4
           no-frame: true
 
-      # 2. Generate Stats & Languages (Self-Hosted via vn7n24fzkq)
-      # This tool hits the GitHub API directly, so it works even if Vercel is down.
-      - name: 📈 Generate Stats & Languages
-        uses: vn7n24fzkq/github-profile-summary-cards@release
-        env:
-          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }} # Ensure your PAT has 'repo' scope
-        with:
-          USERNAME: Abeera-Mehtab
-          # Note: If 'dark_lover' is not supported by this tool, it falls back to default.
-          # You can change THEME to 'monokai' or 'solarized' if needed.
-          THEME: dark_lover 
+      # 3. Streak (Direct download from stable endpoint)
+      - name: 🔥 Download Streak Stats
+        run: |
+          curl -sf -o streak-stats.svg "https://streak-stats.demolab.com/?user=Abeera-Mehtab&theme=dark_lover&border_radius=7" || echo "Streak service temporarily unavailable, keeping previous version"
+
+      # 4. Rename & Commit to match your README exactly
+      - name: 💾 Sync & Commit Assets
+        run: |
+          # Copy summary cards to your exact README filenames
+          cp -f ./profile-summary-card-output/Abeera-Mehtab/3-stats.svg ./github-stats.svg
+          cp -f ./profile-summary-card-output/Abeera-Mehtab/2-most-commit-language.svg ./languages.svg
+          
+          git config --local user.name "github-actions[bot]"
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # Pull latest to avoid race conditions with the auto-push from step 1
+          git pull --rebase origin main || true
+          
+          git add github-stats.svg languages.svg streak-stats.svg profile-trophy.svg
+          git commit -m "📊 Update profile assets [skip ci]" || echo "No changes to commit"
+          git push
