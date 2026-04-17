@@ -2,30 +2,20 @@ name: 📊 Generate Profile Assets
 
 on:
   schedule:
-    - cron: "0 0 * * *" # Runs daily at midnight UTC
-  workflow_dispatch: # Allows manual run
+    - cron: "0 0 * * *"
+  workflow_dispatch:
 
 jobs:
   generate:
     runs-on: ubuntu-latest
-    timeout-minutes: 10 # Prevents infinite loops
     permissions:
-      contents: write # Required to push files
+      contents: write
     
     steps:
-      - name: 🛎️ Checkout Repository
+      - name: 🛎️ Checkout
         uses: actions/checkout@v4
 
-      # 1. Generate Stats & Languages (Stable Alternative)
-      - name: 📈 Generate Stats & Languages
-        uses: vn7n24fzkq/github-profile-summary-cards@release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          USERNAME: Abeera-Mehtab
-          THEME: dark_lover
-
-      # 2. Generate Trophies
+      # 1. Generate Trophies (Self-Hosted via ryo-ma)
       - name: 🏆 Generate Trophies
         uses: ryo-ma/github-profile-trophy@master
         with:
@@ -36,24 +26,14 @@ jobs:
           column: 4
           no-frame: true
 
-      # 3. Generate Streak (Direct Download to avoid hanging actions)
-      - name: 🔥 Generate Streak
-        run: |
-          curl -s -o streak-stats.svg "https://streak-stats.demolab.com/?user=Abeera-Mehtab&theme=dark_lover&border_radius=7"
-
-      # 4. Organize Files to Match Your README Expectations
-      # The summary-cards action outputs to a subfolder; we copy them to the root with the names your README wants
-      - name: 📂 Organize Files
-        run: |
-          cp -f profile-summary-card-output/Abeera-Mehtab/3-stats.svg github-stats.svg
-          cp -f profile-summary-card-output/Abeera-Mehtab/2-most-commit-language.svg languages.svg
-          # Trophies and Streak are already in the root with correct names
-
-      # 5. Commit & Push
-      - name: 💾 Commit & Push
-        run: |
-          git config --local user.name "github-actions[bot]"
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git add github-stats.svg languages.svg profile-trophy.svg streak-stats.svg
-          git commit -m "📊 Update profile assets [skip ci]" || echo "No changes to commit"
-          git push
+      # 2. Generate Stats & Languages (Self-Hosted via vn7n24fzkq)
+      # This tool hits the GitHub API directly, so it works even if Vercel is down.
+      - name: 📈 Generate Stats & Languages
+        uses: vn7n24fzkq/github-profile-summary-cards@release
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }} # Ensure your PAT has 'repo' scope
+        with:
+          USERNAME: Abeera-Mehtab
+          # Note: If 'dark_lover' is not supported by this tool, it falls back to default.
+          # You can change THEME to 'monokai' or 'solarized' if needed.
+          THEME: dark_lover 
