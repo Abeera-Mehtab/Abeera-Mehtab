@@ -57,6 +57,7 @@
 
 ### 🖥️ Core Tools
 <div align="center" style="white-space:nowrap"><img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/linux/linux-original.svg" alt="Linux" width="40" style="display:inline-block;margin:0 3px"><img src="https://www.vectorlogo.zone/logos/git-scm/git-scm-icon.svg" alt="Git" width="40" style="display:inline-block;margin:0 3px"></div>
+
 ---
 
 ## ⚡️ Where to Find Me
